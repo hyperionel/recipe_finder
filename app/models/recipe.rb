@@ -1,6 +1,6 @@
 class Recipe < ApplicationRecord
-  belongs_to :category
-  belongs_to :author
+  belongs_to :category, optional: true
+  belongs_to :author, optional: true
   has_many :recipe_ingredients
   has_many :ingredients, through: :recipe_ingredients
 
