@@ -13,3 +13,114 @@
  *= require_tree .
  *= require_self
  */
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-height-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.full-height-columns {
+  flex: 1;
+  display: flex;
+}
+
+.scrollable-column {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-box {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dropdown-menu {
+  width: 100%;
+}
+
+.dropdown-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.card-content {
+  padding: 0.5rem;
+}
+
+.card-content .title {
+  margin-bottom: 0.5rem;
+}
+
+.card-content .subtitle {
+  margin-bottom: 0.5rem;
+}
+
+.card-content .content p {
+  margin-bottom: 0.25rem;
+}
+
+.tag.is-success.is-light {
+  background-color: #2e7d32;
+  color: #ffffff;
+}
+
+.recipe-card {
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.recipe-card .card-content {
+  padding: 0.5rem;
+}
+
+.recipe-card .title {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.recipe-card .subtitle {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.recipe-card .content {
+  font-size: 0.75rem;
+}
+
+.recipe-card .content p {
+  margin-bottom: 0.25rem;
+}
+
+.scrollable-box {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
