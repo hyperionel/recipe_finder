@@ -41,7 +41,13 @@ module Recipes
           parsed_ingredient_list << parsed_ingredient
         end
 
-        recipes << { recipe: recipe, ingredients: parsed_ingredient_list }
+        # we will use these to compare against the mapped versions
+        recipes << {
+          recipe: recipe,
+          ingredients: parsed_ingredient_list,
+          category: recipe_data["category"],
+          author: recipe_data["author"]
+        }
       end
 
       # Bulk upsert categories, authors, and ingredients
@@ -54,8 +60,8 @@ module Recipes
 
       # Update recipes with category and author id, then bulk insert
       recipes.each do |data|
-        data[:recipe].category_id = category_mapping[data[:recipe].category]
-        data[:recipe].author_id = author_mapping[data[:recipe].author]
+        data[:recipe].category_id = category_mapping[data[:category]]
+        data[:recipe].author_id = author_mapping[data[:author]]
       end
       imported_recipes = Recipe.import recipes.map { |r| r[:recipe] }, validate: false
       recipe_mapping = Recipe.find(imported_recipes.ids).index_by(&:title)
