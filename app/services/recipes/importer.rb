@@ -3,31 +3,27 @@ module Recipes
     def self.import(json_data, batch_size: 500)
       parser = Recipes::Parser.new
       recipes = JSON.parse(json_data)
-      total_batches = (recipes.size.to_f / batch_size).ceil
 
       Recipe.transaction do
-        recipes.each_slice(batch_size).with_index(1) do |batch, index|
-          Rails.logger.info "Processing batch #{index} of #{total_batches}"
+        recipes.each_slice(batch_size) do |batch|
           import_batch(batch, parser)
-          Rails.logger.info "Completed batch #{index}"
         end
       end
-
-      Rails.logger.info "Import completed successfully"
     end
 
     private
 
     def self.import_batch(batch, parser)
-      related_data = Struct.new(:recipe, :category, :author)
-      related_data_arr = []
-      ingredients = []
+      recipes = []
+      categories = Set.new
+      authors = Set.new
+      ingredients = Set.new
       recipe_ingredients = []
 
       batch.each do |recipe_data|
         parsed_ingredient_list = []
-        category_name = recipe_data["category"]
-        author_name = recipe_data["author"]
+        categories.add(recipe_data["category"])
+        authors.add(recipe_data["author"])
 
         recipe = Recipe.new(
           title: recipe_data["title"],
@@ -35,51 +31,54 @@ module Recipes
           prep_time: recipe_data["prep_time"],
           ratings: recipe_data["ratings"],
           cuisine: recipe_data["cuisine"],
-          image: recipe_data["image"]
+          image: recipe_data["image"],
+          ingredient_data: recipe_data["ingredients"]
         )
+
         recipe_data["ingredients"].each do |ingredient_string|
           parsed_ingredient = parser.parse_ingredient(ingredient_string)
-          ingredients << Ingredient.new(name: parsed_ingredient)
+          ingredients.add(parsed_ingredient)
           parsed_ingredient_list << parsed_ingredient
         end
 
-        related_data_arr << related_data.new({ recipe => parsed_ingredient_list }, category_name, author_name)
+        recipes << { recipe: recipe, ingredients: parsed_ingredient_list }
       end
 
-      # Bulk insert or update categories and get mapping
-      new_categories = related_data_arr.map { |data| Category.new(name: data.category) }
-      imported_categories = Category.import new_categories, on_duplicate_key_ignore: true
-      category_mapping = Category.find(imported_categories.ids).pluck(:id, :name)
+      # Bulk upsert categories, authors, and ingredients
+      category_mapping = upsert_and_get_mapping(Category, categories.to_a)
+      ingredient_mapping = upsert_and_get_mapping(Ingredient, ingredients.to_a)
 
-      # Bulk insert or update authors and get mapping
-      new_authors = related_data_arr.map { |data| Author.new(name: data.author) }
-      imported_authors = Author.import new_authors, on_duplicate_key_ignore: true
-      author_mapping = Author.find(imported_authors.ids).pluck(:id, :name)
+      # map Author separately since the import gem doesn't like its special unique constraint
+      Author.import authors.to_a.map { |name| { name: name } }, on_duplicate_key_ignore: true
+      author_mapping = Author.where(name: authors.to_a).pluck(:name, :id).to_h
 
-      # Update recipes with category and author id
-      related_data_arr.each do |data|
-        data.recipe.keys.first.category_id = category_mapping.select { |cat| cat[1] == data.category }&.first&.first
-        data.recipe.keys.first.author_id = author_mapping.select { |cat| cat[1] == data.author }&.first&.first
+      # Update recipes with category and author id, then bulk insert
+      recipes.each do |data|
+        data[:recipe].category_id = category_mapping[data[:recipe].category]
+        data[:recipe].author_id = author_mapping[data[:recipe].author]
       end
-
-      # Bulk insert recipes
-      recipes = related_data_arr.map { |data| data.recipe.keys.first }
-      imported_recipes = Recipe.import recipes, validate: false
-      recipe_mapping = Recipe.find(imported_recipes.ids).pluck(:id, :title)
-
-      # Bulk insert ingredients
-      imported_ingredients = Ingredient.import ingredients, on_duplicate_key_ignore: true
-      ingredient_mapping = Ingredient.find(imported_ingredients.ids).pluck(:id, :name)
+      imported_recipes = Recipe.import recipes.map { |r| r[:recipe] }, validate: false
+      recipe_mapping = Recipe.find(imported_recipes.ids).index_by(&:title)
 
       # Build and Import RecipeIngredients
-      related_data_arr.each do |data|
-        recipe_id = recipe_mapping.select { |recipe| recipe[1] == data.recipe.keys.first.title }&.first&.first
-        data.recipe.values.first.each do |ing_title|
-          ingredient_id = ingredient_mapping.select { |ingredient| ingredient[1] == ing_title }&.first&.first
-          recipe_ingredients << RecipeIngredient.new(recipe_id: recipe_id, ingredient_id: ingredient_id)
+      recipes.each do |data|
+        recipe = recipe_mapping[data[:recipe].title]
+        data[:ingredients].each do |ingredient|
+          recipe_ingredients << RecipeIngredient.new(
+            recipe_id: recipe.id,
+            ingredient_id: ingredient_mapping[ingredient]
+          )
         end
       end
+
       RecipeIngredient.import recipe_ingredients, on_duplicate_key_ignore: true
+    end
+
+    def self.upsert_and_get_mapping(model, names)
+      model.import names.map { |name| { name: name } },
+                   on_duplicate_key_update: { conflict_target: [ :name ], columns: [ :name ] },
+                   validate: false
+      model.where(name: names).pluck(:name, :id).to_h
     end
   end
 end

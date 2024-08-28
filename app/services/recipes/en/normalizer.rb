@@ -11,9 +11,11 @@ module Recipes
 
       def normalize(ingredient_string)
         ingredient_string
+          .gsub(/^\W+/, "")  # Remove any non-letter chars at the beginning of the string
+          .gsub(/[\(\)]/, "")
+          .gsub(/\s-\s.*$/, "")
           .gsub(/\d+(\s*\/\s*\d+)?/, "")  # Remove numbers and fractions
           .gsub(/[¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/, "")  # Remove unicode fractions
-          .gsub(/\(.*?\)/, "")  # Remove content in parentheses
           .gsub(/,.*$/, "")  # Remove everything after a comma
           .strip
           .downcase
