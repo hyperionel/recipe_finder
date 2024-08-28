@@ -5,3 +5,4 @@ ReactRailsUJS.useContext(componentRequireContext);
 
 import("../../assets/stylesheets/application.css");
 import("bulma/css/bulma.css");
+import "../styles/background";

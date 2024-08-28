@@ -1,9 +1,10 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
   if (isLoading) {
     return (
-      <div className="box scrollable-box">
+      <div className="box">
         <h2 className="subtitle is-5">Recipes You Can Make</h2>
         <progress className="progress is-small is-primary" max="100">
           15%
@@ -13,7 +14,7 @@ const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
   }
 
   return (
-    <div className="box scrollable-box">
+    <div className="box">
       <h2 className="subtitle is-5">Recipes You Can Make</h2>
       {recipes.length > 0 ? (
         <div className="columns is-multiline">
@@ -24,7 +25,10 @@ const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
               onMouseEnter={() => onRecipeHover(recipe.ingredients)}
               onMouseLeave={onRecipeLeave}
             >
-              <div className="card recipe-card">
+              <Link
+                to={`/recipes/${recipe.id}`}
+                className="card recipe-card has-background-link"
+              >
                 <div className="card-content">
                   <p className="title is-5">{recipe.title}</p>
                   <p className="subtitle is-6">
@@ -37,7 +41,7 @@ const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
