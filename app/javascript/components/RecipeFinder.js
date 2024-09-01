@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import IngredientList from "./IngredientList";
 import RecipeList from "./RecipeList";
 import AddIngredient from "./AddIngredient";
+import SurpriseButton from "./SurpriseButton";
 
 const RecipeFinder = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -18,7 +19,7 @@ const RecipeFinder = () => {
     if (storedIngredients.length > 0) {
       setIngredients(storedIngredients);
     } else {
-      fetchIngredients();
+      fetchSurprise();
     }
   }, []);
 
@@ -28,15 +29,15 @@ const RecipeFinder = () => {
     }
   }, [ingredients, location]);
 
-  const fetchIngredients = async () => {
+  const fetchSurprise = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/v1/ingredients");
+      const response = await fetch("/api/v1/ingredients/surprise");
       const data = await response.json();
       setIngredients(data);
       localStorage.setItem("ingredients", JSON.stringify(data));
     } catch (error) {
-      console.error("Error fetching ingredients:", error);
+      console.error("Error fetching surprise ingredients:", error);
     } finally {
       setIsLoading(false);
     }
@@ -97,12 +98,9 @@ const RecipeFinder = () => {
                   <div className="mt-4">
                     <AddIngredient onAdd={addIngredient} />
                   </div>
-                  <button
-                    className="button is-primary is-fullwidth mt-4"
-                    onClick={fetchIngredients}
-                  >
-                    Randomize Ingredients
-                  </button>
+                  <div className="mt-4">
+                    <SurpriseButton onClick={fetchSurprise} />
+                  </div>
                 </>
               ) : (
                 <div className="placeholder-container">
@@ -115,12 +113,9 @@ const RecipeFinder = () => {
                   <div className="mt-4">
                     <AddIngredient onAdd={addIngredient} />
                   </div>
-                  <button
-                    className="button is-primary is-fullwidth mt-4"
-                    onClick={fetchIngredients}
-                  >
-                    Get Random Ingredients
-                  </button>
+                  <div className="mt-4">
+                    <SurpriseButton onClick={fetchSurprise} />
+                  </div>
                 </div>
               )}
             </div>

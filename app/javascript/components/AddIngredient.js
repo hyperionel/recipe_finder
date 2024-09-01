@@ -13,7 +13,9 @@ const AddIngredient = ({ onAdd }) => {
   }, [name]);
 
   const fetchSuggestions = async () => {
-    const response = await fetch(`/api/v1/ingredients?query=${name}`);
+    const response = await fetch(
+      `/api/v1/ingredients/autocomplete?query=${name}`
+    );
     const data = await response.json();
     setSuggestions(data);
   };
