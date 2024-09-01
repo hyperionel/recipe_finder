@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import IngredientList from "./IngredientList";
 import RecipeList from "./RecipeList";
 import AddIngredient from "./AddIngredient";
@@ -8,16 +9,24 @@ const RecipeFinder = () => {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [highlightedIngredientIds, setHighlightedIngredientIds] = useState([]);
+  const location = useLocation();
 
   useEffect(() => {
-    fetchIngredients();
+    const storedIngredients = JSON.parse(
+      localStorage.getItem("ingredients") || "[]"
+    );
+    if (storedIngredients.length > 0) {
+      setIngredients(storedIngredients);
+    } else {
+      fetchIngredients();
+    }
   }, []);
 
   useEffect(() => {
     if (ingredients.length > 0) {
       fetchRecipes();
     }
-  }, [ingredients]);
+  }, [ingredients, location]);
 
   const fetchIngredients = async () => {
     setIsLoading(true);
@@ -25,6 +34,7 @@ const RecipeFinder = () => {
       const response = await fetch("/api/v1/ingredients");
       const data = await response.json();
       setIngredients(data);
+      localStorage.setItem("ingredients", JSON.stringify(data));
     } catch (error) {
       console.error("Error fetching ingredients:", error);
     } finally {
@@ -49,11 +59,15 @@ const RecipeFinder = () => {
   };
 
   const addIngredient = (ingredient) => {
-    setIngredients([...ingredients, ingredient]);
+    const updatedIngredients = [...ingredients, ingredient];
+    setIngredients(updatedIngredients);
+    localStorage.setItem("ingredients", JSON.stringify(updatedIngredients));
   };
 
   const removeIngredient = (id) => {
-    setIngredients(ingredients.filter((ing) => ing.id !== id));
+    const updatedIngredients = ingredients.filter((ing) => ing.id !== id);
+    setIngredients(updatedIngredients);
+    localStorage.setItem("ingredients", JSON.stringify(updatedIngredients));
   };
 
   const handleRecipeHover = (recipeIngredients) => {
