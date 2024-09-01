@@ -219,3 +219,21 @@ body {
     background-color: #ffcb85;
   }
 }
+
+.level {
+  align-items: center;
+}
+
+.level-left,
+.level-right {
+  flex-shrink: 0;
+}
+
+.button.is-danger.is-light.is-small {
+  color: black;
+  font-size: 0.75rem;
+  height: 2em;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+  background-color: #ff0e0e;
+}

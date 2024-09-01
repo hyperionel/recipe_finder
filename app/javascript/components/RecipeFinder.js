@@ -79,6 +79,12 @@ const RecipeFinder = () => {
     setHighlightedIngredientIds([]);
   };
 
+  const clearIngredients = () => {
+    setIngredients([]);
+    localStorage.removeItem("ingredients");
+    setRecipes([]);
+  };
+
   return (
     <div className="content-wrapper">
       <div className="container">
@@ -88,6 +94,19 @@ const RecipeFinder = () => {
         <div className="columns">
           <div className="column is-two-fifths">
             <div className="box">
+              <div className="level">
+                <div className="level-left">
+                  <h2 className="subtitle is-4">Available Ingredients</h2>
+                </div>
+                <div className="level-right">
+                  <button
+                    className="button is-danger is-light is-small"
+                    onClick={clearIngredients}
+                  >
+                    Clear Ingredients
+                  </button>
+                </div>
+              </div>
               {ingredients.length > 0 ? (
                 <>
                   <IngredientList

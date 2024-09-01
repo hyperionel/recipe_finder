@@ -7,7 +7,6 @@ const IngredientList = ({
 }) => {
   return (
     <div>
-      <h2 className="subtitle">Available Ingredients</h2>
       <div className="tags are-medium">
         {ingredients.map((ingredient) => (
           <span
