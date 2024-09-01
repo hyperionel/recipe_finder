@@ -17,11 +17,10 @@ module Recipes
           .gsub(/\d+(\s*\/\s*\d+)?/, "")  # Remove numbers and fractions
           .gsub(/[¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/, "")  # Remove unicode fractions
           .gsub(/,.*$/, "")  # Remove everything after a comma
-          .strip
-          .downcase
           .gsub(/\b(#{(UNITS_OF_MEASURE + SIZES).join('|')})\b/, "")  # Remove standalone units and sizes
           .gsub(/\s+/, " ")  # Replace multiple spaces with a single space
-          .strip  # Remove leading and trailing spaces
+          .downcase
+          .strip
       end
     end
   end

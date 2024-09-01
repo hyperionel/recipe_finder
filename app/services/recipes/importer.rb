@@ -14,17 +14,10 @@ module Recipes
     private
 
     def self.import_batch(batch, parser)
-      recipes = []
-      categories = Set.new
-      authors = Set.new
-      ingredients = Set.new
+      import_data = []
       recipe_ingredients = []
 
       batch.each do |recipe_data|
-        parsed_ingredient_list = []
-        categories.add(recipe_data["category"])
-        authors.add(recipe_data["author"])
-
         recipe = Recipe.new(
           title: recipe_data["title"],
           cook_time: recipe_data["cook_time"],
@@ -35,39 +28,32 @@ module Recipes
           ingredient_data: recipe_data["ingredients"]
         )
 
-        recipe_data["ingredients"].each do |ingredient_string|
-          parsed_ingredient = parser.parse_ingredient(ingredient_string)
-          ingredients.add(parsed_ingredient)
-          parsed_ingredient_list << parsed_ingredient
-        end
-
-        # we will use these to compare against the mapped versions
-        recipes << {
+        import_data << {
           recipe: recipe,
-          ingredients: parsed_ingredient_list,
+          ingredients: recipe_data["ingredients"].map { |ingredient| parser.parse_ingredient(ingredient) },
           category: recipe_data["category"],
           author: recipe_data["author"]
         }
       end
 
       # Bulk upsert categories, authors, and ingredients
-      category_mapping = upsert_and_get_mapping(Category, categories.to_a)
-      ingredient_mapping = upsert_and_get_mapping(Ingredient, ingredients.to_a)
+      category_mapping = upsert_and_get_mapping(Category, import_data.map { |data| data[:category] }.uniq)
+      ingredient_mapping = upsert_and_get_mapping(Ingredient, import_data.map { |data| data[:ingredients] }.flatten.uniq)
 
       # map Author separately since the import gem doesn't like its special unique constraint
-      Author.import authors.to_a.map { |name| { name: name } }, on_duplicate_key_ignore: true
-      author_mapping = Author.where(name: authors.to_a).pluck(:name, :id).to_h
+      author_results = Author.import import_data.map { |data| Author.new(name: data[:author]) }, on_duplicate_key_ignore: true
+      author_mapping = Author.find(author_results.ids).pluck(:name, :id).to_h
 
       # Update recipes with category and author id, then bulk insert
-      recipes.each do |data|
+      import_data.each do |data|
         data[:recipe].category_id = category_mapping[data[:category]]
         data[:recipe].author_id = author_mapping[data[:author]]
       end
-      imported_recipes = Recipe.import recipes.map { |r| r[:recipe] }, validate: false
+      imported_recipes = Recipe.import import_data.map { |r| r[:recipe] }
       recipe_mapping = Recipe.find(imported_recipes.ids).index_by(&:title)
 
       # Build and Import RecipeIngredients
-      recipes.each do |data|
+      import_data.each do |data|
         recipe = recipe_mapping[data[:recipe].title]
         data[:ingredients].each do |ingredient|
           recipe_ingredients << RecipeIngredient.new(
@@ -82,8 +68,7 @@ module Recipes
 
     def self.upsert_and_get_mapping(model, names)
       model.import names.map { |name| { name: name } },
-                   on_duplicate_key_update: { conflict_target: [ :name ], columns: [ :name ] },
-                   validate: false
+                   on_duplicate_key_ignore: true
       model.where(name: names).pluck(:name, :id).to_h
     end
   end
