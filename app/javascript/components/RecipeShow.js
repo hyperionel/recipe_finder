@@ -14,6 +14,15 @@ const RecipeShow = () => {
     fetchRecipe();
   }, [id]);
 
+  const getImageUrl = (imageString) => {
+    try {
+      const url = new URL(imageString);
+      return url.searchParams.get("url") || "";
+    } catch {
+      return "";
+    }
+  };
+
   if (!recipe) return <div>Loading...</div>;
 
   return (
@@ -21,7 +30,14 @@ const RecipeShow = () => {
       <Link to="/" className="button is-light mb-3">
         Back to Recipes
       </Link>
-      <div className="box">
+      <div
+        className="box"
+        style={{
+          backgroundImage: `url(${getImageUrl(recipe.image)})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <h1 className="title">{recipe.title}</h1>
         <p className="subtitle">
           By {recipe.author ? recipe.author.name : "Unknown"} | Category:{" "}

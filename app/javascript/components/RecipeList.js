@@ -13,6 +13,15 @@ const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
     );
   }
 
+  const getImageUrl = (imageString) => {
+    try {
+      const url = new URL(imageString);
+      return url.searchParams.get("url") || "";
+    } catch {
+      return "";
+    }
+  };
+
   return (
     <div className="box">
       <h2 className="subtitle is-5">Recipes You Can Make</h2>
@@ -29,6 +38,12 @@ const RecipeList = ({ recipes, isLoading, onRecipeHover, onRecipeLeave }) => {
                 to={`/recipes/${recipe.id}`}
                 className="card recipe-card has-background-link"
               >
+                <div
+                  className="recipe-card-background"
+                  style={{
+                    backgroundImage: `url(${getImageUrl(recipe.image)})`,
+                  }}
+                ></div>
                 <div className="card-content">
                   <p className="title is-5">{recipe.title}</p>
                   <p className="subtitle is-6">

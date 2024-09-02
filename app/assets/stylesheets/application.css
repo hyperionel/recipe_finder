@@ -125,6 +125,21 @@ body {
 .recipe-card {
   transition: all 0.3s ease;
   display: block;
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
+.recipe-card-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
 }
 
 .recipe-card:hover {
@@ -132,8 +147,17 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+.recipe-card:hover .recipe-card-background {
+  opacity: 0.5;
+}
+
 .recipe-card .card-content {
   padding: 1rem;
+  position: relative;
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.1);
+  height: 100%;
+  overflow-y: hidden;
 }
 
 .recipe-card .title {
@@ -148,6 +172,12 @@ body {
 
 .recipe-card .content {
   font-size: 0.75rem;
+}
+
+.recipe-card .title,
+.recipe-card .subtitle,
+.recipe-card .content {
+  color: #ffff;
 }
 
 .recipe-card .content p {
