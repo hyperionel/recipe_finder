@@ -30,28 +30,29 @@ const RecipeShow = () => {
       <Link to="/" className="button is-light mb-3">
         Back to Recipes
       </Link>
-      <div
-        className="box"
-        style={{
-          backgroundImage: `url(${getImageUrl(recipe.image)})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <h1 className="title">{recipe.title}</h1>
-        <p className="subtitle">
-          By {recipe.author ? recipe.author.name : "Unknown"} | Category:{" "}
-          {recipe.category ? recipe.category.name : "Uncategorized"}
-        </p>
-        <div className="content">
-          <p>Cook Time: {recipe.cook_time} minutes</p>
-          <p>Prep Time: {recipe.prep_time} minutes</p>
-          <h2 className="subtitle">Ingredients:</h2>
-          <ul>
-            {recipe.ingredient_data.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
+      <div className="box recipe-detail">
+        <div
+          className="recipe-detail-background"
+          style={{
+            backgroundImage: `url(${getImageUrl(recipe.image)})`,
+          }}
+        ></div>
+        <div className="recipe-detail-content">
+          <h1 className="title">{recipe.title}</h1>
+          <p className="subtitle">
+            By {recipe.author ? recipe.author.name : "Unknown"} | Category:{" "}
+            {recipe.category ? recipe.category.name : "Uncategorized"}
+          </p>
+          <div className="content">
+            <p>Cook Time: {recipe.cook_time} minutes</p>
+            <p>Prep Time: {recipe.prep_time} minutes</p>
+            <h2 className="subtitle">Ingredients:</h2>
+            <ul>
+              {recipe.ingredient_data.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
